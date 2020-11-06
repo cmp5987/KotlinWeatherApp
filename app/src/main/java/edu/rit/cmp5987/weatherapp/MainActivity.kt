@@ -5,6 +5,7 @@ import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
@@ -40,11 +41,11 @@ class MainActivity : AppCompatActivity() {
 
             //incase something goes wrong
             try{
-                val url = URL("https://dog.ceo/api/breeds/list/all")
+                val url = URL("https://run.mocky.io/v3/256f47b8-b718-4919-90bc-58e2bede4c69")
                 connection =  url.openConnection() as HttpURLConnection
                 connection.doInput = true
                 //by default doInput is true but doOutput is false
-                connection.doOutput = true
+                //connection.doOutput = true
 
                 //how to recieve data
                 val httpResult: Int = connection.responseCode
@@ -89,6 +90,28 @@ class MainActivity : AppCompatActivity() {
             cancelProgressDialog()
 
             Log.i("JSON RESPONSE RESULT", result)
+
+            val jsonObject = JSONObject(result)
+            val message = jsonObject.optString("message")
+            Log.i("Message", message)
+
+            val userId = jsonObject.optInt("user_id")
+            Log.i("UserId", "$userId")
+
+            val profileDetailsObject = jsonObject.optJSONObject("profile_details")
+            val isProfileCompleted = profileDetailsObject.optBoolean("is_profile_completed")
+            Log.i("Is Profile Completed", "$isProfileCompleted")
+
+            val dataListArray = jsonObject.optJSONArray("data_list")
+            Log.i("DataList Size", "${dataListArray.length()}")
+            for(item in 0 until dataListArray.length()){
+                Log.i("Value $item", "${dataListArray[item]}")
+                val dataItemObject: JSONObject = dataListArray[item] as JSONObject
+                val id = jsonObject.optInt("id")
+                Log.i("ID", "$id")
+                val value = jsonObject.optString("value")
+                Log.i("InnerValue", "$value")
+            }
         }
 
         private fun showProgressDialog(){
