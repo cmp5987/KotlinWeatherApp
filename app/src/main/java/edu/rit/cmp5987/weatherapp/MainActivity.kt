@@ -5,11 +5,9 @@ import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import com.google.gson.Gson
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStream
-import java.io.InputStreamReader
+import java.io.*
 import java.lang.Exception
 import java.net.HttpURLConnection
 import java.net.SocketTimeoutException
@@ -20,10 +18,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        CallAPILoginAsyncTask().execute()
+        CallAPILoginAsyncTask("Catherine", "12345").execute()
     }
 
-    private inner class CallAPILoginAsyncTask(): AsyncTask<Any, Void, String>(){
+    private inner class CallAPILoginAsyncTask(val username: String, val password: String): AsyncTask<Any, Void, String>(){
 
         private lateinit var customProgressDialog: Dialog
 
@@ -44,8 +42,38 @@ class MainActivity : AppCompatActivity() {
                 val url = URL("https://run.mocky.io/v3/256f47b8-b718-4919-90bc-58e2bede4c69")
                 connection =  url.openConnection() as HttpURLConnection
                 connection.doInput = true
+
+                /*
                 //by default doInput is true but doOutput is false
-                //connection.doOutput = true
+
+                connection.doOutput = true
+
+                //follow redirect
+                connection.instanceFollowRedirects = false
+
+                //accept the request method
+                //GET POST HEAD
+                connection.requestMethod = "POST"
+
+                //Request Details
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.setRequestProperty("charset", "utf-8")
+                connection.setRequestProperty("Accept", "application/json")
+
+                //set if we want to use cache
+                connection.useCaches = false
+
+                //we can use this to write data
+                val writeDataOutputStream = DataOutputStream(connection.outputStream)
+                val jsonRequest = JSONObject()
+                jsonRequest.put("username", username)
+                jsonRequest.put("password", password)
+
+                writeDataOutputStream.writeBytes(jsonRequest.toString())
+                writeDataOutputStream.flush()
+                writeDataOutputStream.close()
+
+                */
 
                 //how to recieve data
                 val httpResult: Int = connection.responseCode
@@ -89,8 +117,16 @@ class MainActivity : AppCompatActivity() {
             super.onPostExecute(result)
             cancelProgressDialog()
 
-            Log.i("JSON RESPONSE RESULT", result)
 
+            Log.i("JSON RESPONSE RESULT", result)
+            val responseData = Gson().fromJson(result, ResponseData::class.java)
+            Log.i("Message", responseData.message)
+            Log.i("Rating", "${responseData.profile_details.is_profile_completed}")
+            for(item in responseData.data_list.indices){
+                Log.i("ID", "${responseData.data_list[item].id}")
+            }
+
+            /*
             val jsonObject = JSONObject(result)
             val message = jsonObject.optString("message")
             Log.i("Message", message)
@@ -112,6 +148,8 @@ class MainActivity : AppCompatActivity() {
                 val value = jsonObject.optString("value")
                 Log.i("InnerValue", "$value")
             }
+
+             */
         }
 
         private fun showProgressDialog(){
